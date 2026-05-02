@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: ShopSphere
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 600000
+      connection-timeout: 20000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
+
+app:
+  security:
+    jwt:
+      access-token-expiration: 86400000 # 24 hours for local testing #900000 # 15 minutes
+      refresh-token-expiration: 604800000 # 7 days
+    disposable-email: 10minutemail,20minutemail,33mail,5ymail,anonbox,guerrillamail,mailinator,maildrop,mailnesia,moakt,my10minutemail,throwawaymail,trashmail,temp-mail,tempmail,truemail,yopmail
+  admin:
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+
+cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME}
+  api_key: ${CLOUDINARY_API_KEY}
+  api_secret: ${CLOUDINARY_API_SECRET}
