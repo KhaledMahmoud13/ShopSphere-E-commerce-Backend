@@ -31,6 +31,9 @@ public enum ErrorCode {
     IMAGES_REQUIRED("IMAGES_REQUIRED", "At least one image is required", BAD_REQUEST),
     MAX_IMAGES_EXCEEDED("MAX_IMAGES_EXCEEDED", "Maximum %s images allowed", BAD_REQUEST),
     AUTH_REQUIRED("UNAUTHORIZED", "Authentication is required to access this resource", HttpStatus.UNAUTHORIZED),
+    ORDER_HAS_NO_ITEMS("ORDER_HAS_NO_ITEMS", "Order must contain at least one item", BAD_REQUEST),
+    PRODUCT_NOT_FOUND("PRODUCT_NOT_FOUND", "Product not found", NOT_FOUND),
+    ITEM_OUT_OF_STOCK("ITEM_OUT_OF_STOCK", "Product '%s' is out of stock", BAD_REQUEST),
     ;
 
     private final String code;
