@@ -21,8 +21,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.khaled.shopsphere.exception.ErrorCode.ORDER_HAS_NO_ITEMS;
-import static com.khaled.shopsphere.exception.ErrorCode.USER_NOT_FOUND;
+import static com.khaled.shopsphere.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -69,11 +68,11 @@ public class OrderServiceImpl implements OrderService {
             Product product = productMap.get(itemRequest.getProductId());
 
             if (product == null) {
-                throw new RuntimeException("Product not found");
+                throw new BusinessException(PRODUCT_NOT_FOUND);
             }
 
             if (itemRequest.getQuantity() <= 0) {
-                throw new RuntimeException("Invalid quantity");
+                throw new BusinessException(INVALID_ITEM_QUANTITY);
             }
 
             BigDecimal itemTotal = product.getPrice()

@@ -34,6 +34,7 @@ public enum ErrorCode {
     ORDER_HAS_NO_ITEMS("ORDER_HAS_NO_ITEMS", "Order must contain at least one item", BAD_REQUEST),
     PRODUCT_NOT_FOUND("PRODUCT_NOT_FOUND", "Product not found", NOT_FOUND),
     ITEM_OUT_OF_STOCK("ITEM_OUT_OF_STOCK", "Product '%s' is out of stock", BAD_REQUEST),
+    INVALID_ITEM_QUANTITY("INVALID_ITEM_QUANTITY", "Item quantity must be greater than 0", BAD_REQUEST),
     ;
 
     private final String code;
