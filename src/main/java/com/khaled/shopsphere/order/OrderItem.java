@@ -30,9 +30,6 @@ public class OrderItem extends BaseEntity {
     @Column(name = "PRODUCT_NAME", nullable = false)
     private String productName;
 
-    @Column(name = "IMAGE_URL")
-    private String imageUrl;
-
     @Column(name = "QUANTITY", nullable = false)
     private Integer quantity;
 

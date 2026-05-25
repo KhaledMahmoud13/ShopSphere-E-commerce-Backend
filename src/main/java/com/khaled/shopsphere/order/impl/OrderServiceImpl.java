@@ -84,7 +84,6 @@ public class OrderServiceImpl implements OrderService {
                     .order(order)
                     .productId(product.getId())
                     .productName(product.getName())
-                    .imageUrl(product.getImages().getFirst().getUrl())
                     .quantity(itemRequest.getQuantity())
                     .priceAtPurchase(product.getPrice())
                     .build();

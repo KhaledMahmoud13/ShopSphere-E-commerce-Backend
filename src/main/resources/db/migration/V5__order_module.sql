@@ -20,7 +20,6 @@ CREATE TABLE ORDER_ITEMS
     ORDER_ID           UUID           NOT NULL,
     PRODUCT_ID         UUID           NOT NULL,
     PRODUCT_NAME       VARCHAR(255)   NOT NULL,
-    IMAGE_URL          TEXT,
 
     QUANTITY           INT            NOT NULL,
     PRICE_AT_PURCHASE  DECIMAL(10, 2) NOT NULL,
