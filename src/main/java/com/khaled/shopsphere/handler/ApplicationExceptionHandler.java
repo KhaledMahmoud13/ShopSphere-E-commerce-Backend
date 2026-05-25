@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +99,17 @@ public class ApplicationExceptionHandler {
                 .code(INTERNAL_EXCEPTION.getCode())
                 .message(INTERNAL_EXCEPTION.getDefaultMessage())
                 .build();
-        return new ResponseEntity<>(response, INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(response, INTERNAL_EXCEPTION.getStatus());
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleException(final MissingServletRequestPartException exception) {
+        log.error(exception.getMessage(), exception);
+        final ErrorResponse response = ErrorResponse.builder()
+                .code(IMAGES_REQUIRED.getCode())
+                .message(IMAGES_REQUIRED.getDefaultMessage())
+                .build();
+        return new ResponseEntity<>(response, IMAGES_REQUIRED.getStatus());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
