@@ -13,8 +13,7 @@ import java.util.UUID;
 public class OrderItemResponse {
     private UUID productId;
     private String productName;
-    private String imageUrl;
     private Integer quantity;
     private BigDecimal price;
-    private BigDecimal currentPrice;
+//    private BigDecimal currentPrice;
 }

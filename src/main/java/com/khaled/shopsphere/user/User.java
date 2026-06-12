@@ -1,5 +1,6 @@
 package com.khaled.shopsphere.user;
 
+import com.khaled.shopsphere.address.Address;
 import com.khaled.shopsphere.common.BaseEntity;
 import com.khaled.shopsphere.permission.Permission;
 import com.khaled.shopsphere.role.Role;
@@ -65,6 +66,10 @@ public class User implements UserDetails {
     )
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Address> addresses = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

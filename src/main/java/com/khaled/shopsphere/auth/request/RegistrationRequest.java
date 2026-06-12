@@ -39,12 +39,12 @@ public class RegistrationRequest {
 
     @NotBlank(message = "VALIDATION.REGISTRATION.PASSWORD.BLANK")
     @Size(min = 8, max = 72, message = "VALIDATION.REGISTRATION.PASSWORD.SIZE")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*\\W).*$", message = "VALIDATION.REGISTRATION.PASSWORD.WEAK")
-    @Schema(example = "pAssword1!_")
+    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[A-Za-z\\d@$!%*?&]{8,}$", message = "VALIDATION.REGISTRATION.PASSWORD.WEAK")
+    @Schema(example = "password1")
     private String password;
 
     @NotBlank(message = "VALIDATION.REGISTRATION.CONFIRM_PASSWORD.BLANK")
     @Size(min = 8, max = 72, message = "VALIDATION.REGISTRATION.CONFIRM_PASSWORD.SIZE")
-    @Schema(example = "pAssword1!_")
+    @Schema(example = "password1")
     private String confirmPassword;
 }

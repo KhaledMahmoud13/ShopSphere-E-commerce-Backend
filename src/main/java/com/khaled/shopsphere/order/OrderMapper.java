@@ -28,16 +28,13 @@ public class OrderMapper {
                     return OrderItemResponse.builder()
                             .productId(item.getProductId())
                             .productName(item.getProductName())
-                            .imageUrl(item.getImageUrl())
                             .quantity(item.getQuantity())
                             .price(item.getPriceAtPurchase())
-
-                            // optional live data
-                            .currentPrice(
-                                    product != null
-                                            ? product.getPrice()
-                                            : null
-                            )
+//                            .currentPrice(
+//                                    product != null
+//                                            ? product.getPrice()
+//                                            : null
+//                            )
                             .build();
                 })
                 .toList();
@@ -57,7 +54,6 @@ public class OrderMapper {
                 .map(item -> OrderItemResponse.builder()
                         .productId(item.getProductId())
                         .productName(item.getProductName())
-                        .imageUrl(item.getImageUrl())
                         .quantity(item.getQuantity())
                         .price(item.getPriceAtPurchase())
                         .build())

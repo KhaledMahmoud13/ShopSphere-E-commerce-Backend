@@ -12,8 +12,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class ShopSphereApplication {
 
     @Value("${app.admin.email}")
@@ -44,10 +46,10 @@ public class ShopSphereApplication {
 
             final User user = userMapper.toUser(RegistrationRequest.builder()
                     .email(adminEmail)
-                    .firstName("Admin").
-                    lastName("0").
-                    phoneNumber("+201234567891").
-                    password(adminPassword)
+                    .firstName("Admin")
+                    .lastName("0")
+                    .phoneNumber("+201234567891")
+                    .password(adminPassword)
                     .confirmPassword(adminPassword)
                     .build());
 

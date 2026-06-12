@@ -1,10 +1,10 @@
 package com.khaled.shopsphere.order.impl;
 
-import com.khaled.shopsphere.inventory.InventoryService;
-import com.khaled.shopsphere.order.event.OrderCreatedEvent;
 import com.khaled.shopsphere.exception.BusinessException;
+import com.khaled.shopsphere.inventory.InventoryItem;
+import com.khaled.shopsphere.inventory.InventoryService;
 import com.khaled.shopsphere.order.*;
-import com.khaled.shopsphere.order.request.CreateOrderRequest;
+import com.khaled.shopsphere.order.event.OrderCreatedEvent;
 import com.khaled.shopsphere.order.request.OrderItemRequest;
 import com.khaled.shopsphere.order.response.OrderResponse;
 import com.khaled.shopsphere.product.Product;
@@ -33,27 +33,36 @@ public class OrderServiceImpl implements OrderService {
     private final InventoryService inventoryService;
     private final ApplicationEventPublisher eventPublisher;
     private final OrderMapper mapper;
+    private final OrderStatusValidator orderStatusValidator;
 
     @Override
     @Transactional
-    public OrderResponse create(CreateOrderRequest request, UUID userId) {
-        if (request.getItems() == null || request.getItems().isEmpty()) {
+    public Order createFromCart(List<OrderItemRequest> orderItems, UUID userId) {
+        if (orderItems == null || orderItems.isEmpty()) {
             throw new BusinessException(ORDER_HAS_NO_ITEMS);
         }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
 
-        inventoryService.validateAndDeduct(request.getItems());
+        List<InventoryItem> inventoryItems = orderItems.stream()
+                .map(item -> new InventoryItem(
+                        item.getProductId(),
+                        item.getQuantity()
+                ))
+                .toList();
 
-        Set<UUID> productIds = request.getItems()
-                .stream()
+        inventoryService.validateAndDeduct(inventoryItems);
+
+        Set<UUID> productIds = orderItems.stream()
                 .map(OrderItemRequest::getProductId)
                 .collect(Collectors.toSet());
 
         Map<UUID, Product> productMap = productRepository.findAllById(productIds)
                 .stream()
-                .collect(Collectors.toMap(Product::getId, p -> p));
+                .collect(Collectors.toMap(
+                        Product::getId, p -> p
+                ));
 
         Order order = Order.builder()
                 .user(user)
@@ -61,10 +70,10 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         List<OrderItem> items = new ArrayList<>();
+
         BigDecimal total = BigDecimal.ZERO;
 
-        for (OrderItemRequest itemRequest : request.getItems()) {
-
+        for (OrderItemRequest itemRequest : orderItems) {
             Product product = productMap.get(itemRequest.getProductId());
 
             if (product == null) {
@@ -76,12 +85,17 @@ public class OrderServiceImpl implements OrderService {
             }
 
             BigDecimal itemTotal = product.getPrice()
-                    .multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
+                    .multiply(
+                            BigDecimal.valueOf(
+                                    itemRequest.getQuantity()
+                            )
+                    );
 
             total = total.add(itemTotal);
 
             OrderItem item = OrderItem.builder()
                     .order(order)
+                    .productId(product.getId())
                     .productId(product.getId())
                     .productName(product.getName())
                     .quantity(itemRequest.getQuantity())
@@ -96,11 +110,9 @@ public class OrderServiceImpl implements OrderService {
 
         Order saved = orderRepository.save(order);
 
-        eventPublisher.publishEvent(
-                new OrderCreatedEvent(saved.getId(), userId)
-        );
+        eventPublisher.publishEvent(new OrderCreatedEvent(saved.getId(), userId));
 
-        return mapper.toOrderResponse(saved, productMap);
+        return saved;
     }
 
     @Override
@@ -112,5 +124,51 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .map(mapper::toOrderResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderById(UUID userId, UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ORDER_NOT_FOUND));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BusinessException(UNAUTHORIZED_ORDER_ACCESS);
+        }
+
+        return mapper.toOrderResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(UUID userId, UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ORDER_NOT_FOUND));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BusinessException(UNAUTHORIZED_ORDER_ACCESS);
+        }
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new BusinessException(ORDER_ALREADY_CANCELLED);
+        }
+
+        if (order.getStatus() != OrderStatus.CREATED && order.getStatus() != OrderStatus.PAID) {
+            throw new BusinessException(ORDER_CANNOT_BE_CANCELLED, order.getStatus().name());
+        }
+
+        inventoryService.restoreStock(order);
+
+        order.setStatus(OrderStatus.CANCELLED);
+    }
+
+    @Override
+    @Transactional
+    public void updateOrderStatus(UUID orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ORDER_NOT_FOUND));
+
+        orderStatusValidator.validateTransition(order.getStatus(), status);
+        order.setStatus(status);
     }
 }

@@ -31,8 +31,15 @@ CREATE TABLE PRODUCT_IMAGES
     created_by         UUID NOT NULL,
     last_modified_by   UUID,
 
+    CONSTRAINT pk_product_images PRIMARY KEY (id),
+
     CONSTRAINT FK_PRODUCT_IMAGE_PRODUCT
         FOREIGN KEY (PRODUCT_ID)
             REFERENCES PRODUCTS (ID)
             ON DELETE CASCADE
 );
+
+CREATE INDEX idx_products_name ON products (name);
+CREATE INDEX idx_products_price ON products (price);
+CREATE INDEX idx_products_stock ON products (stock);
+CREATE INDEX idx_products_created_at ON products (created_date);

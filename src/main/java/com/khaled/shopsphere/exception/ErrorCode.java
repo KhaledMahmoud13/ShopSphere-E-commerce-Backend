@@ -32,9 +32,21 @@ public enum ErrorCode {
     MAX_IMAGES_EXCEEDED("MAX_IMAGES_EXCEEDED", "Maximum %s images allowed", BAD_REQUEST),
     AUTH_REQUIRED("UNAUTHORIZED", "Authentication is required to access this resource", HttpStatus.UNAUTHORIZED),
     ORDER_HAS_NO_ITEMS("ORDER_HAS_NO_ITEMS", "Order must contain at least one item", BAD_REQUEST),
+    ORDER_NOT_FOUND("ORDER_NOT_FOUND", "Order not found", NOT_FOUND),
+    UNAUTHORIZED_ORDER_ACCESS("UNAUTHORIZED_ORDER_ACCESS", "You are not authorized to access this order", HttpStatus.UNAUTHORIZED),
     PRODUCT_NOT_FOUND("PRODUCT_NOT_FOUND", "Product not found", NOT_FOUND),
     ITEM_OUT_OF_STOCK("ITEM_OUT_OF_STOCK", "Product '%s' is out of stock", BAD_REQUEST),
     INVALID_ITEM_QUANTITY("INVALID_ITEM_QUANTITY", "Item quantity must be greater than 0", BAD_REQUEST),
+    CART_NOT_FOUND("CART_NOT_FOUND", "Cart not found for user with id %s", NOT_FOUND),
+    CART_IS_EMPTY("CART_IS_EMPTY", "Cart is empty", BAD_REQUEST),
+    ORDER_ALREADY_CANCELLED("ORDER_ALREADY_CANCELLED", "Order is already cancelled", BAD_REQUEST),
+    ORDER_CANNOT_BE_CANCELLED("ORDER_CANNOT_BE_CANCELLED", "Order cannot be cancelled in status %s", BAD_REQUEST),
+    INVALID_ORDER_STATUS_TRANSITION("INVALID_ORDER_STATUS_TRANSITION", "Cannot change order status from %s to %s", BAD_REQUEST),
+    PAYMENT_NOT_FOUND("PAYMENT_NOT_FOUND", "Payment not found", NOT_FOUND),
+    PAYMENT_ALREADY_EXISTS("PAYMENT_ALREADY_EXISTS", "Payment already exists", CONFLICT),
+    ADDRESS_NOT_FOUND("ADDRESS_NOT_FOUND", "Address not found", NOT_FOUND),
+    INVALID_VERIFICATION_CODE("INVALID_VERIFICATION_CODE", "Invalid verification code", BAD_REQUEST),
+    ACCOUNT_ALREADY_EMAIL_VERIFIED("ACCOUNT_ALREADY_EMAIL_VERIFIED", "Email is already verified", BAD_REQUEST),
     ;
 
     private final String code;
