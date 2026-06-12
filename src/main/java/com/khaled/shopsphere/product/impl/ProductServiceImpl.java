@@ -14,13 +14,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static com.khaled.shopsphere.exception.ErrorCode.*;
 
@@ -28,13 +32,13 @@ import static com.khaled.shopsphere.exception.ErrorCode.*;
 @RequiredArgsConstructor
 @Slf4j
 public class ProductServiceImpl implements ProductService {
+
     private final ProductRepository repository;
     private final ProductImageServices productImageServices;
     private final Cloudinary cloudinary;
     private final ProductMapper productMapper;
 
     private static final int MAX_IMAGES = 5;
-
 
     private static final List<String> ALLOWED_SORT_FIELDS =
             List.of("name", "price", "stock", "createdAt");
@@ -61,14 +65,19 @@ public class ProductServiceImpl implements ProductService {
             List<ImageUploadResponse> uploads = futures.stream()
                     .map(future -> {
                         try {
-                            return future.join();
-                        } catch (Exception e) {
+                            return future.get();
+                        } catch (ExecutionException e) {
+                            Throwable cause = e.getCause();
+                            if (cause instanceof BusinessException be) throw be;
+                            throw new BusinessException(IMAGE_UPLOAD_FAILED);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                             throw new BusinessException(IMAGE_UPLOAD_FAILED);
                         }
                     })
                     .toList();
 
-            List<ProductImage> images = new ArrayList<>();
+            Set<ProductImage> images = new HashSet<>();
 
             for (int i = 0; i < uploads.size(); i++) {
                 ImageUploadResponse upload = uploads.get(i);
@@ -94,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
             throw e;
         } catch (Exception e) {
             cleanupUploadedImages(uploadedPublicIds);
-            log.error("Error creating product", e);
+            log.error("Unexpected error creating product", e);
             throw new BusinessException(PRODUCT_CREATION_FAILED);
         }
     }
@@ -155,11 +164,13 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private void cleanupUploadedImages(List<String> publicIds) {
+    @Async("imageUploadExecutor")
+    public void cleanupUploadedImages(List<String> publicIds) {
         for (String publicId : publicIds) {
             try {
                 cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.warn("Failed to cleanup Cloudinary image: {}", publicId, e);
             }
         }
     }

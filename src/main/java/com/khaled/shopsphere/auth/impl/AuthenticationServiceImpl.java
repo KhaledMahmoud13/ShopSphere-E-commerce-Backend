@@ -1,9 +1,8 @@
 package com.khaled.shopsphere.auth.impl;
 
 import com.khaled.shopsphere.auth.AuthenticationService;
-import com.khaled.shopsphere.auth.request.AuthenticationRequest;
-import com.khaled.shopsphere.auth.request.RefreshRequest;
-import com.khaled.shopsphere.auth.request.RegistrationRequest;
+import com.khaled.shopsphere.auth.VerificationService;
+import com.khaled.shopsphere.auth.request.*;
 import com.khaled.shopsphere.auth.response.AuthenticationResponse;
 import com.khaled.shopsphere.exception.BusinessException;
 import com.khaled.shopsphere.role.Role;
@@ -29,6 +28,7 @@ import static com.khaled.shopsphere.exception.ErrorCode.*;
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final VerificationService verificationService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
@@ -68,6 +68,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         log.debug("Saving user {}", user);
         this.userRepository.save(user);
+        verificationService.sendVerificationCode(SendCodeRequest.builder()
+                .email(user.getEmail())
+                .build());
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmail(VerifyEmailRequest request) {
+        User user = this.userRepository.findByEmailIgnoreCase(request.getEmail())
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+
+        if (user.isEmailVerified()) {
+            throw new BusinessException(ACCOUNT_ALREADY_EMAIL_VERIFIED);
+        }
+
+        boolean valid = verificationService.verifyCode(request);
+
+        if (!valid) {
+            throw new BusinessException(INVALID_VERIFICATION_CODE);
+        }
+
+        user.setEmailVerified(true);
+        this.userRepository.save(user);
+    }
+
+    @Override
+    public void resendVerificationCode(SendCodeRequest request) {
+        User user = userRepository.findByEmailIgnoreCase(request.getEmail())
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+
+        if (user.isEmailVerified()) {
+            throw new BusinessException(ACCOUNT_ALREADY_EMAIL_VERIFIED);
+        }
+
+        verificationService.sendVerificationCode(request);
     }
 
     @Override

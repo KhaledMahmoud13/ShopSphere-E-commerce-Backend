@@ -1,9 +1,7 @@
 package com.khaled.shopsphere.auth;
 
 
-import com.khaled.shopsphere.auth.request.AuthenticationRequest;
-import com.khaled.shopsphere.auth.request.RefreshRequest;
-import com.khaled.shopsphere.auth.request.RegistrationRequest;
+import com.khaled.shopsphere.auth.request.*;
 import com.khaled.shopsphere.auth.response.AuthenticationResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,6 +34,22 @@ public class AuthenticationController {
             @RequestBody final RegistrationRequest request) {
         this.authenticationService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/send-code")
+    public ResponseEntity<Void> sendCode(
+            @Valid @RequestBody final SendCodeRequest request
+    ) {
+        authenticationService.resendVerificationCode(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(
+            @Valid @RequestBody final VerifyEmailRequest request
+    ) {
+        authenticationService.verifyEmail(request);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("refresh")

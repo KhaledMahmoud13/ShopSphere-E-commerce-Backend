@@ -4,9 +4,12 @@ import com.khaled.shopsphere.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Formula;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -25,6 +28,9 @@ public class Product extends BaseEntity {
     private BigDecimal price;
     @Column(name = "STOCK", nullable = false)
     private Integer stock;
+    @Formula("(SELECT pi.url FROM PRODUCT_IMAGES pi WHERE pi.product_id = id AND pi.is_primary = true LIMIT 1)")
+    private String primaryImageUrl;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductImage> images;
+    @Builder.Default
+    private Set<ProductImage> images = new HashSet<>();
 }

@@ -1,0 +1,28 @@
+services:
+  redis:
+    image: redis
+    container_name: shopsphere-redis
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:17
+    container_name: shopsphere-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: shopsphere-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  postgres_data:

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static com.khaled.shopsphere.exception.ErrorCode.*;
@@ -25,48 +26,59 @@ public class ProductImageServicesImpl implements ProductImageServices {
 
     private static final long MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
-    @Async
+    private static final Set<String> ALLOWED_SIGNATURES = Set.of(
+            "FFD8FF",   // JPEG
+            "89504E47", // PNG
+            "524946"    // WebP (RIFF)
+    );
+
+    @Async("imageUploadExecutor")
     @Override
     public CompletableFuture<ImageUploadResponse> upload(MultipartFile file) {
-
-        validate(file);
-
         try {
-            Map<?, ?> result = cloudinary.uploader()
-                    .upload(file.getBytes(), ObjectUtils.emptyMap());
+            byte[] bytes = file.getBytes();
 
-            ImageUploadResponse response =  ImageUploadResponse.builder()
+            validateSize(bytes.length);
+            validateType(bytes);
+
+            Map<?, ?> result = cloudinary.uploader()
+                    .upload(bytes, ObjectUtils.asMap(
+                            "folder", "products",
+                            "resource_type", "image",
+                            "format", "webp"
+                    ));
+
+            ImageUploadResponse response = ImageUploadResponse.builder()
                     .url(result.get("secure_url").toString())
                     .publicId(result.get("public_id").toString())
                     .build();
 
             return CompletableFuture.completedFuture(response);
-        } catch (IOException e) {
-            log.error("Cloudinary upload failed", e);
-            throw new BusinessException(IMAGE_UPLOAD_FAILED);
+        } catch (BusinessException e) {
+            return CompletableFuture.failedFuture(e);
+        } catch (Exception e) {
+            log.error("Cloudinary upload failed for file: {}", file.getOriginalFilename(), e);
+            return CompletableFuture.failedFuture(new BusinessException(IMAGE_UPLOAD_FAILED));
         }
     }
 
-    private void validate(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
+    private void validateSize(long sizeInBytes) {
+        if (sizeInBytes == 0) {
             throw new BusinessException(INVALID_IMAGE);
         }
-
-        validateSize(file);
-        validateType(file);
-    }
-
-    private void validateSize(MultipartFile file) {
-        if (file.getSize() > MAX_FILE_SIZE) {
+        if (sizeInBytes > MAX_FILE_SIZE) {
             throw new BusinessException(FILE_TOO_LARGE);
         }
     }
 
-    private void validateType(MultipartFile file) {
-        String contentType = file.getContentType();
-
-        if (contentType == null || !contentType.startsWith("image/")) {
+    private void validateType(byte[] bytes) {
+        if (bytes.length < 4) {
             throw new BusinessException(UNSUPPORTED_FILE_TYPE);
         }
+
+        String hex = String.format("%02X%02X%02X%02X", bytes[0], bytes[1], bytes[2], bytes[3]);
+        log.info("Hex: {}", hex);
+        boolean valid = ALLOWED_SIGNATURES.stream().anyMatch(hex::startsWith);
+        if (!valid) throw new BusinessException(UNSUPPORTED_FILE_TYPE);
     }
 }
