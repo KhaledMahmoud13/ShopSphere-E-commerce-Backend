@@ -1,8 +1,8 @@
 package com.khaled.shopsphere.payment.response;
 
+import com.khaled.shopsphere.payment.PaymentStatus;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -10,9 +10,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentResponse {
+public class PaymentSessionResponse {
     private UUID paymentId;
-    private UUID orderId;
-    private BigDecimal amount;
-    private String status;
+    private String sessionUrl;
+    private PaymentStatus status;
 }

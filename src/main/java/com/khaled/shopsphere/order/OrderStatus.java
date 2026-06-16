@@ -1,7 +1,7 @@
 package com.khaled.shopsphere.order;
 
 public enum OrderStatus {
-    CREATED,
+    PENDING_PAYMENT,
     PAID,
     PROCESSING,
     SHIPPED,

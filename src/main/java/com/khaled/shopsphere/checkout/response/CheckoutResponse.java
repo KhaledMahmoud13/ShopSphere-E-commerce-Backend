@@ -1,6 +1,7 @@
 package com.khaled.shopsphere.checkout.response;
 
 import com.khaled.shopsphere.order.OrderStatus;
+import com.khaled.shopsphere.payment.PaymentStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class CheckoutResponse {
     private Integer totalItems;
     private BigDecimal totalPrice;
     private UUID paymentId;
-    private String paymentStatus;
+    private PaymentStatus paymentStatus;
+    private String sessionUrl;
     private List<CheckoutItemResponse> items;
 }

@@ -10,7 +10,7 @@ import static com.khaled.shopsphere.order.OrderStatus.*;
 public class OrderStatusValidator {
     public void validateTransition(OrderStatus current, OrderStatus target) {
         boolean valid = switch (current) {
-            case CREATED -> target == PAID || target == OrderStatus.CANCELLED;
+            case PENDING_PAYMENT -> target == PAID || target == OrderStatus.CANCELLED;
             case PAID -> target == PROCESSING || target == CANCELLED;
             case PROCESSING -> target == SHIPPED;
             case SHIPPED -> target == DELIVERED;

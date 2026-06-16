@@ -39,33 +39,33 @@ public class OrderController {
             @PathVariable UUID orderId,
             Authentication authentication
     ) {
-
-        UUID userId = ((User) authentication.getPrincipal()).getId();
-
-
-        return ResponseEntity.ok(orderService.getOrderById(userId, orderId));
+        return ResponseEntity.ok(orderService.getOrderById(orderId));
     }
 
     @PatchMapping("/{orderId}/cancel")
-    @PreAuthorize("hasAuthority('order:cancel')")
+    @PreAuthorize("""
+            hasAuthority('order:read')
+            and
+            @orderSecurityService.isOrderOwner(#orderId)
+            """)
     public ResponseEntity<Void> cancelOrder(
-            @PathVariable UUID orderId,
-            Authentication authentication
+            @PathVariable UUID orderId
     ) {
-
-        UUID userId = ((User) authentication.getPrincipal()).getId();
-
-        orderService.cancelOrder(userId, orderId);
+        orderService.cancelOrder(orderId);
 
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{orderId}/status")
-    @PreAuthorize("hasAuthority('order:update-status')")
+    @PreAuthorize("""
+            hasAuthority('order:cancel')
+            and
+            @orderSecurityService.isOrderOwner(#orderId)
+            """)
     public ResponseEntity<Void> updateStatus(
             @PathVariable UUID orderId,
-            @Valid @RequestBody UpdateOrderStatusRequest request,
-            Authentication authentication) {
+            @Valid @RequestBody UpdateOrderStatusRequest request
+    ) {
 
         orderService.updateOrderStatus(orderId, request.getStatus());
         return ResponseEntity.noContent().build();

@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -27,12 +28,16 @@ public class Payment extends BaseEntity {
     @Column(name = "AMOUNT", nullable = false)
     private BigDecimal amount;
 
-//    @Column(name = "STRIPE_SESSION_ID", unique = true)
-//    private String stripeSessionId;
-//
-//    @Column(name = "STRIPE_PAYMENT_INTENT_ID")
-//    private String stripePaymentIntentId;
+    @Column(name = "STRIPE_SESSION_ID", unique = true)
+    private String stripeSessionId;
+
+    @Column(name = "STRIPE_PAYMENT_INTENT_ID", unique = true)
+    private String stripePaymentIntentId;
+
+    @Column(name = "PAID_AT")
+    private Instant paidAt;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", nullable = false)
     private PaymentStatus status;
 }

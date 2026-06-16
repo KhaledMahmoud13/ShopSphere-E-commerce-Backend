@@ -26,8 +26,6 @@ public class VerificationServiceImpl implements VerificationService {
     private final RedisTemplate<String, String> redisTemplate;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
-    //    private final ApplicationEventPublisher eventPublisher;
-//    private final VerificationEmailProducer producer;
 
     @Override
     @Transactional
@@ -42,9 +40,6 @@ public class VerificationServiceImpl implements VerificationService {
                         code,
                         Duration.ofMinutes(10)
                 );
-
-//        eventPublisher.publishEvent(new VerificationEmailEvent(request.getEmail(), code));
-//        producer.send(request.getEmail(), code);
 
         try {
             VerificationEmailMessage message = new VerificationEmailMessage(

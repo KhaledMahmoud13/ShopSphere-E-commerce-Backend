@@ -39,6 +39,7 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/",
             "/index.html",
+            "/webhooks/stripe",
     };
     private final JwtFilter jwtFilter;
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
