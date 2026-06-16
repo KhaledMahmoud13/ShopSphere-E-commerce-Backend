@@ -5,6 +5,7 @@ import com.khaled.shopsphere.checkout.response.CheckoutResponse;
 import com.khaled.shopsphere.order.Order;
 import com.khaled.shopsphere.order.OrderItem;
 import com.khaled.shopsphere.payment.Payment;
+import com.khaled.shopsphere.payment.response.PaymentSessionResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CheckoutMapper {
 
-    public CheckoutResponse toCheckoutResponse(Order order, Payment payment) {
+    public CheckoutResponse toCheckoutResponse(Order order, PaymentSessionResult result) {
         List<CheckoutItemResponse> items = order.getItems()
                 .stream()
                 .map(this::toItemResponse)
@@ -29,8 +30,9 @@ public class CheckoutMapper {
                 .orderId(order.getId())
                 .status(order.getStatus())
                 .totalPrice(order.getTotalPrice())
-                .paymentId(payment.getId())
-                .paymentStatus(payment.getStatus().name())
+                .paymentId(result.getPayment().getId())
+                .paymentStatus(result.getPayment().getStatus())
+                .sessionUrl(result.getSessionUrl())
                 .totalItems(totalItems)
                 .items(items)
                 .build();

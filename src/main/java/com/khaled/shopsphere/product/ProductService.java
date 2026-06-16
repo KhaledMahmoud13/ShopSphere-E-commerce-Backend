@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ProductService {
-    public ProductResponse create(CreateProductRequest request, List<MultipartFile> files);
+    ProductResponse create(CreateProductRequest request, List<MultipartFile> files);
 
-    public PageResponse<ProductResponse> getProducts(ProductFilterRequest filter, Pageable pageable);
+    PageResponse<ProductResponse> getProducts(ProductFilterRequest filter, Pageable pageable);
 }

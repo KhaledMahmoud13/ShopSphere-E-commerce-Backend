@@ -15,5 +15,6 @@ public class OrderResponse {
     private UUID id;
     private BigDecimal totalPrice;
     private String status;
+    private OrderAddressResponse shippingAddress;
     private List<OrderItemResponse> items;
 }

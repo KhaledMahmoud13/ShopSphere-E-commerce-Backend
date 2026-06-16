@@ -1,18 +1,22 @@
 package com.khaled.shopsphere.payment;
 
-import com.khaled.shopsphere.payment.response.PaymentResponse;
+import com.khaled.shopsphere.payment.response.PaymentSessionResponse;
+import com.khaled.shopsphere.payment.response.PaymentSessionResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentMapper {
-    public PaymentResponse toPaymentResponse(Payment payment) {
-        return PaymentResponse.builder()
+
+    public PaymentSessionResponse toResponse(
+            Payment payment,
+            String sessionUrl
+    ) {
+        return PaymentSessionResponse.builder()
                 .paymentId(payment.getId())
-                .orderId(payment.getOrder().getId())
-                .amount(payment.getAmount())
-                .status(payment.getStatus().name())
+                .status(payment.getStatus())
+                .sessionUrl(sessionUrl)
                 .build();
     }
 }

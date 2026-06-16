@@ -13,9 +13,9 @@ public interface OrderService {
 
     List<OrderResponse> getUserOrders(UUID userId);
 
-    OrderResponse getOrderById(UUID userId, UUID orderId);
+    OrderResponse getOrderById(UUID orderId);
 
-    void cancelOrder(UUID userId, UUID orderId);
+    void cancelOrder(UUID orderId);
 
     void updateOrderStatus(UUID orderId, OrderStatus status);
 }

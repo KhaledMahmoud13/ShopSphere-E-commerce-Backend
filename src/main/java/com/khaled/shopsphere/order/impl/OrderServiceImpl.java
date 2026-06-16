@@ -66,7 +66,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = Order.builder()
                 .user(user)
-                .status(OrderStatus.CREATED)
+                .status(OrderStatus.PENDING_PAYMENT)
                 .build();
 
         List<OrderItem> items = new ArrayList<>();
@@ -95,7 +95,6 @@ public class OrderServiceImpl implements OrderService {
 
             OrderItem item = OrderItem.builder()
                     .order(order)
-                    .productId(product.getId())
                     .productId(product.getId())
                     .productName(product.getName())
                     .quantity(itemRequest.getQuantity())
@@ -128,32 +127,24 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getOrderById(UUID userId, UUID orderId) {
+    public OrderResponse getOrderById(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ORDER_NOT_FOUND));
-
-        if (!order.getUser().getId().equals(userId)) {
-            throw new BusinessException(UNAUTHORIZED_ORDER_ACCESS);
-        }
 
         return mapper.toOrderResponse(order);
     }
 
     @Override
     @Transactional
-    public void cancelOrder(UUID userId, UUID orderId) {
+    public void cancelOrder(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ORDER_NOT_FOUND));
-
-        if (!order.getUser().getId().equals(userId)) {
-            throw new BusinessException(UNAUTHORIZED_ORDER_ACCESS);
-        }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new BusinessException(ORDER_ALREADY_CANCELLED);
         }
 
-        if (order.getStatus() != OrderStatus.CREATED && order.getStatus() != OrderStatus.PAID) {
+        if (order.getStatus() != OrderStatus.PENDING_PAYMENT && order.getStatus() != OrderStatus.PAID) {
             throw new BusinessException(ORDER_CANNOT_BE_CANCELLED, order.getStatus().name());
         }
 
