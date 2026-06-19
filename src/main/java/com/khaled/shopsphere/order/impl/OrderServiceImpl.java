@@ -1,10 +1,12 @@
 package com.khaled.shopsphere.order.impl;
 
+import com.khaled.shopsphere.common.PageResponse;
 import com.khaled.shopsphere.exception.BusinessException;
 import com.khaled.shopsphere.inventory.InventoryItem;
 import com.khaled.shopsphere.inventory.InventoryService;
 import com.khaled.shopsphere.order.*;
 import com.khaled.shopsphere.order.event.OrderCreatedEvent;
+import com.khaled.shopsphere.order.request.OrderFilterRequest;
 import com.khaled.shopsphere.order.request.OrderItemRequest;
 import com.khaled.shopsphere.order.response.OrderResponse;
 import com.khaled.shopsphere.product.Product;
@@ -14,6 +16,10 @@ import com.khaled.shopsphere.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +40,9 @@ public class OrderServiceImpl implements OrderService {
     private final ApplicationEventPublisher eventPublisher;
     private final OrderMapper mapper;
     private final OrderStatusValidator orderStatusValidator;
+
+    private static final List<String> ALLOWED_SORT_FIELDS =
+            List.of("totalPrice", "status", "createdDate", "lastModifiedDate");
 
     @Override
     @Transactional
@@ -161,5 +170,49 @@ public class OrderServiceImpl implements OrderService {
 
         orderStatusValidator.validateTransition(order.getStatus(), status);
         order.setStatus(status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<OrderResponse> getAllOrders(OrderFilterRequest filter, Pageable pageable) {
+        Pageable finalPageable = pageable;
+
+        if (filter.getSortBy() != null && !filter.getSortBy().isEmpty()) {
+
+            Sort.Direction direction = "desc".equalsIgnoreCase(filter.getSortDirection())
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+
+            List<Sort.Order> orders = filter.getSortBy().stream()
+                    .filter(ALLOWED_SORT_FIELDS::contains)
+                    .map(field -> new Sort.Order(direction, field))
+                    .toList();
+
+            finalPageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.by(orders)
+            );
+        }
+
+        Page<Order> page;
+
+        if (filter.getStatus() != null) {
+            page = orderRepository.findByStatus(filter.getStatus(), finalPageable);
+        } else {
+            page = orderRepository.findAll(finalPageable);
+        }
+
+        Page<OrderResponse> responsePage = page.map(mapper::toOrderResponse);
+
+        return PageResponse.<OrderResponse>builder()
+                .data(responsePage.getContent())
+                .page(responsePage.getNumber() + 1)
+                .size(responsePage.getSize())
+                .totalElements(responsePage.getTotalElements())
+                .totalPages(responsePage.getTotalPages())
+                .first(responsePage.isFirst())
+                .last(responsePage.isLast())
+                .build();
     }
 }

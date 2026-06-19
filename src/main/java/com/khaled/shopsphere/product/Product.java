@@ -1,5 +1,6 @@
 package com.khaled.shopsphere.product;
 
+import com.khaled.shopsphere.category.Category;
 import com.khaled.shopsphere.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,4 +34,7 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<ProductImage> images = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CATEGORY_ID")
+    private Category category;
 }

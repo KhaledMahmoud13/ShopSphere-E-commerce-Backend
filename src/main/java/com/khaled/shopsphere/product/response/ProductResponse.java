@@ -17,6 +17,7 @@ public class ProductResponse {
     private String description;
     private BigDecimal price;
     private Integer stock;
-
+    private UUID categoryId;
+    private String categoryName;
     private List<ProductImageResponse> images;
 }

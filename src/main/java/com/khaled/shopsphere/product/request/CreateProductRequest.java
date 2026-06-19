@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -23,4 +24,6 @@ public class CreateProductRequest {
     @NotNull(message = "VALIDATION.PRODUCT.STOCK.NOT_NULL")
     @Min(value = 0, message = "VALIDATION.PRODUCT.STOCK.MIN")
     private Integer stock;
+    @NotNull(message = "VALIDATION.PRODUCT.CATEGORY_ID.NOT_NULL")
+    private UUID categoryId;
 }

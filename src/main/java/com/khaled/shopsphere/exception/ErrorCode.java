@@ -51,6 +51,7 @@ public enum ErrorCode {
     PAYMENT_ALREADY_SUCCEEDED("PAYMENT_ALREADY_SUCCEEDED", "Payment has already been succeeded", BAD_REQUEST),
     INVALID_STRIPE_SIGNATURE("INVALID_STRIPE_SIGNATURE", "Invalid Stripe signature", BAD_REQUEST),
     STRIPE_EVENT_DESERIALIZATION_FAILED("STRIPE_EVENT_DESERIALIZATION_FAILED", "Failed to deserialize Stripe event", INTERNAL_SERVER_ERROR),
+    CATEGORY_NOT_FOUND("CATEGORY_NOT_FOUND", "Category not found", NOT_FOUND),
     ;
 
     private final String code;

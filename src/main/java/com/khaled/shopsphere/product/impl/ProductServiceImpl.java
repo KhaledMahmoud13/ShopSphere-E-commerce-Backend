@@ -2,6 +2,8 @@ package com.khaled.shopsphere.product.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.khaled.shopsphere.category.Category;
+import com.khaled.shopsphere.category.CategoryRepository;
 import com.khaled.shopsphere.common.PageResponse;
 import com.khaled.shopsphere.exception.BusinessException;
 import com.khaled.shopsphere.product.*;
@@ -34,6 +36,7 @@ import static com.khaled.shopsphere.exception.ErrorCode.*;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
+    private final CategoryRepository categoryRepository;
     private final ProductImageServices productImageServices;
     private final Cloudinary cloudinary;
     private final ProductMapper productMapper;
@@ -41,18 +44,22 @@ public class ProductServiceImpl implements ProductService {
     private static final int MAX_IMAGES = 5;
 
     private static final List<String> ALLOWED_SORT_FIELDS =
-            List.of("name", "price", "stock", "createdAt");
+            List.of("name", "price", "stock", "createdDate");
 
     @Override
     @Transactional
     public ProductResponse create(CreateProductRequest request, List<MultipartFile> files) {
         validate(files);
 
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new BusinessException(CATEGORY_NOT_FOUND));
+
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .stock(request.getStock())
+                .category(category)
                 .build();
 
         List<String> uploadedPublicIds = new ArrayList<>();
@@ -115,7 +122,8 @@ public class ProductServiceImpl implements ProductService {
                 filter.getMinPrice(),
                 filter.getMaxPrice(),
                 filter.getMinStock(),
-                filter.getMaxStock()
+                filter.getMaxStock(),
+                filter.getCategoryId()
         );
 
         Pageable finalPageable = pageable;

@@ -1,12 +1,15 @@
 package com.khaled.shopsphere.order;
 
+import com.khaled.shopsphere.common.PageResponse;
 import com.khaled.shopsphere.order.request.CreateOrderRequest;
+import com.khaled.shopsphere.order.request.OrderFilterRequest;
 import com.khaled.shopsphere.order.request.UpdateOrderStatusRequest;
 import com.khaled.shopsphere.order.response.OrderResponse;
 import com.khaled.shopsphere.user.User;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -27,7 +30,6 @@ public class OrderController {
     public ResponseEntity<List<OrderResponse>> getMyOrders(
             Authentication authentication
     ) {
-
         UUID userId = ((User) authentication.getPrincipal()).getId();
 
         return ResponseEntity.ok(orderService.getUserOrders(userId));
@@ -36,8 +38,7 @@ public class OrderController {
     @GetMapping("/{orderId}")
     @PreAuthorize("hasAuthority('order:read')")
     public ResponseEntity<OrderResponse> getOrderById(
-            @PathVariable UUID orderId,
-            Authentication authentication
+            @PathVariable UUID orderId
     ) {
         return ResponseEntity.ok(orderService.getOrderById(orderId));
     }
@@ -57,11 +58,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/status")
-    @PreAuthorize("""
-            hasAuthority('order:cancel')
-            and
-            @orderSecurityService.isOrderOwner(#orderId)
-            """)
+    @PreAuthorize("hasAuthority('admin:access')")
     public ResponseEntity<Void> updateStatus(
             @PathVariable UUID orderId,
             @Valid @RequestBody UpdateOrderStatusRequest request
@@ -69,5 +66,14 @@ public class OrderController {
 
         orderService.updateOrderStatus(orderId, request.getStatus());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasAuthority('admin:access')")
+    public PageResponse<OrderResponse> getAllOrders(
+            @Valid OrderFilterRequest filter,
+            Pageable pageable
+    ) {
+        return orderService.getAllOrders(filter, pageable);
     }
 }

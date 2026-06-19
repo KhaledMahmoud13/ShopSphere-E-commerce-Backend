@@ -14,12 +14,12 @@ public class ProductMapper {
         List<ProductImageResponse> images = product.getImages() == null
                 ? List.of()
                 : product.getImages()
-                  .stream()
-                  .map(img -> ProductImageResponse.builder()
-                              .url(img.getUrl())
-                              .primary(img.isPrimary())
-                              .build())
-                  .toList();
+                .stream()
+                .map(img -> ProductImageResponse.builder()
+                        .url(img.getUrl())
+                        .primary(img.isPrimary())
+                        .build())
+                .toList();
 
         return ProductResponse.builder()
                 .id(product.getId())
@@ -27,6 +27,8 @@ public class ProductMapper {
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .stock(product.getStock())
+                .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
+                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .images(images)
                 .build();
     }

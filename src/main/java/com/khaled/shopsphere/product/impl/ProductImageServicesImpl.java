@@ -62,6 +62,29 @@ public class ProductImageServicesImpl implements ProductImageServices {
         }
     }
 
+    @Override
+    public ImageUploadResponse upload(byte[] bytes, String folder) {
+        validateSize(bytes.length);
+        validateType(bytes);
+
+        try {
+            Map<?, ?> result = cloudinary.uploader()
+                    .upload(bytes, ObjectUtils.asMap(
+                            "folder", folder,
+                            "resource_type", "image",
+                            "format", "webp"
+                    ));
+
+            return ImageUploadResponse.builder()
+                    .url(result.get("secure_url").toString())
+                    .publicId(result.get("public_id").toString())
+                    .build();
+        } catch (IOException e) {
+            log.error("Cloudinary upload failed", e);
+            throw new BusinessException(IMAGE_UPLOAD_FAILED);
+        }
+    }
+
     private void validateSize(long sizeInBytes) {
         if (sizeInBytes == 0) {
             throw new BusinessException(INVALID_IMAGE);

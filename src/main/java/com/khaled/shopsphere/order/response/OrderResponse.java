@@ -1,5 +1,6 @@
 package com.khaled.shopsphere.order.response;
 
+import com.khaled.shopsphere.order.OrderStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -14,7 +15,7 @@ import java.util.UUID;
 public class OrderResponse {
     private UUID id;
     private BigDecimal totalPrice;
-    private String status;
+    private OrderStatus status;
     private OrderAddressResponse shippingAddress;
     private List<OrderItemResponse> items;
 }

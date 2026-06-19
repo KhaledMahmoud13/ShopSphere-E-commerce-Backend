@@ -1,13 +1,11 @@
 package com.khaled.shopsphere.product.request;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -25,10 +23,11 @@ public class ProductFilterRequest {
     private Integer minStock;
     @Min(value = 0, message = "maxStock must be >= 0")
     private Integer maxStock;
+    private UUID categoryId;
     @Size(max = 5, message = "You can sort by at most 5 fields")
     private List<
             @Pattern(
-                    regexp = "name|price|stock|createdAt",
+                    regexp = "name|price|stock|createdDate",
                     message = "Invalid sort field"
             )
                     String
@@ -39,4 +38,18 @@ public class ProductFilterRequest {
             message = "sortDirection must be 'asc' or 'desc'"
     )
     private String sortDirection;
+
+    @AssertTrue(message = "minPrice must be less than or equal to maxPrice")
+    public boolean isPriceRangeValid() {
+        return minPrice == null
+                || maxPrice == null
+                || minPrice.compareTo(maxPrice) <= 0;
+    }
+
+    @AssertTrue(message = "minStock must be less than or equal to maxStock")
+    public boolean isStockRangeValid() {
+        return minStock == null
+                || maxStock == null
+                || minStock <= maxStock;
+    }
 }

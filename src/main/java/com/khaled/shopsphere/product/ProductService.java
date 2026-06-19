@@ -4,7 +4,6 @@ import com.khaled.shopsphere.common.PageResponse;
 import com.khaled.shopsphere.product.request.CreateProductRequest;
 import com.khaled.shopsphere.product.request.ProductFilterRequest;
 import com.khaled.shopsphere.product.response.ProductResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 

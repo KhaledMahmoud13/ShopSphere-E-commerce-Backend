@@ -7,5 +7,8 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public interface ProductImageServices {
-    public CompletableFuture<ImageUploadResponse> upload(MultipartFile file);
+    CompletableFuture<ImageUploadResponse> upload(MultipartFile file);
+
+    ImageUploadResponse upload(byte[] bytes, String folder);
+
 }

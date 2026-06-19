@@ -3,6 +3,7 @@ package com.khaled.shopsphere.product;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class ProductSpecification {
     public static Specification<Product> withFilters(
@@ -10,7 +11,8 @@ public class ProductSpecification {
             BigDecimal minPrice,
             BigDecimal maxPrice,
             Integer minStock,
-            Integer maxStock
+            Integer maxStock,
+            UUID categoryId
     ) {
         return (root, query, cb) -> {
 
@@ -42,6 +44,11 @@ public class ProductSpecification {
             if (maxStock != null) {
                 predicate = cb.and(predicate,
                         cb.lessThanOrEqualTo(root.get("stock"), maxStock));
+            }
+
+            if (categoryId != null) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("category").get("id"), categoryId));
             }
 
             return predicate;
