@@ -1,20 +1,19 @@
 package com.khaled.shopsphere.order;
 
-import com.khaled.shopsphere.cart.Cart;
 import com.khaled.shopsphere.common.PageResponse;
-import com.khaled.shopsphere.order.request.CreateOrderRequest;
 import com.khaled.shopsphere.order.request.OrderFilterRequest;
 import com.khaled.shopsphere.order.request.OrderItemRequest;
 import com.khaled.shopsphere.order.response.OrderResponse;
+import com.khaled.shopsphere.user.User;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    Order createFromCart(List<OrderItemRequest> orderItems, UUID userId);
+    Order createFromCart(List<OrderItemRequest> orderItems, User user);
 
-    List<OrderResponse> getUserOrders(UUID userId);
+    PageResponse<OrderResponse> getUserOrders(UUID userId, Pageable pageable);
 
     OrderResponse getOrderById(UUID orderId);
 

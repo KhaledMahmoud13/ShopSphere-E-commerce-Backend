@@ -1,6 +1,5 @@
 package com.khaled.shopsphere.checkout.request;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.UUID;
@@ -11,6 +10,5 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class CheckoutRequest {
-    @NotNull
     private UUID addressId;
 }

@@ -1,7 +1,6 @@
 package com.khaled.shopsphere.user;
 
 import com.khaled.shopsphere.address.Address;
-import com.khaled.shopsphere.common.BaseEntity;
 import com.khaled.shopsphere.permission.Permission;
 import com.khaled.shopsphere.role.Role;
 import jakarta.persistence.*;
@@ -10,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.core.*;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -58,7 +57,7 @@ public class User implements UserDetails {
     @Column(name = "LAST_MODIFIED_DATE", insertable = false)
     private LocalDateTime lastModifiedDate;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "USER_ROLES",
             joinColumns = @JoinColumn(name = "USER_ID"),

@@ -148,7 +148,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        var page = repository.findAll(spec, finalPageable)
+        var page = repository.findBy(spec, finalPageable)
                 .map(productMapper::toProductResponse);
 
         return PageResponse.<ProductResponse>builder()

@@ -1,7 +1,6 @@
 package com.khaled.shopsphere.order;
 
 import com.khaled.shopsphere.common.PageResponse;
-import com.khaled.shopsphere.order.request.CreateOrderRequest;
 import com.khaled.shopsphere.order.request.OrderFilterRequest;
 import com.khaled.shopsphere.order.request.UpdateOrderStatusRequest;
 import com.khaled.shopsphere.order.response.OrderResponse;
@@ -15,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,16 +25,21 @@ public class OrderController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('order:read')")
-    public ResponseEntity<List<OrderResponse>> getMyOrders(
-            Authentication authentication
+    public PageResponse<OrderResponse> getMyOrders(
+            Authentication authentication,
+            Pageable pageable
     ) {
         UUID userId = ((User) authentication.getPrincipal()).getId();
 
-        return ResponseEntity.ok(orderService.getUserOrders(userId));
+        return orderService.getUserOrders(userId, pageable);
     }
 
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasAuthority('order:read')")
+    @PreAuthorize("""
+            hasAuthority('order:read')
+            and
+            @orderSecurityService.isOrderOwner(#orderId)
+            """)
     public ResponseEntity<OrderResponse> getOrderById(
             @PathVariable UUID orderId
     ) {

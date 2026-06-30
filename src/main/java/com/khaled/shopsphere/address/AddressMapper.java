@@ -21,7 +21,7 @@ public class AddressMapper {
                 .floorNumber(address.getFloorNumber())
                 .apartmentNumber(address.getApartmentNumber())
                 .postalCode(address.getPostalCode())
-                .isDefault(address.isDefault())
+                .isDefault(address.getIsDefault())
                 .build();
     }
 }

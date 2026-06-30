@@ -3,12 +3,13 @@ package com.khaled.shopsphere.address;
 import com.khaled.shopsphere.address.request.CreateAddressRequest;
 import com.khaled.shopsphere.address.request.UpdateAddressRequest;
 import com.khaled.shopsphere.address.response.AddressResponse;
+import com.khaled.shopsphere.user.User;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface AddressService {
-    AddressResponse create(UUID userId, CreateAddressRequest request);
+    AddressResponse create(User user, CreateAddressRequest request);
 
     List<AddressResponse> getAddresses(UUID userId);
 

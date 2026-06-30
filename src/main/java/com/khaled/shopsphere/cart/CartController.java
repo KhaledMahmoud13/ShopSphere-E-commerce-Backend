@@ -30,8 +30,8 @@ public class CartController {
             @Valid @RequestBody AddCartItemRequest request,
             Authentication authentication
     ) {
-        UUID userId = ((User) authentication.getPrincipal()).getId();
-        cartService.addItem(request, userId);
+        User user = ((User) authentication.getPrincipal());
+        cartService.addItem(request, user);
     }
 
     @GetMapping
@@ -39,8 +39,8 @@ public class CartController {
     public ResponseEntity<CartResponse> getMyCart(
             Authentication authentication
     ) {
-        UUID userId = ((User) authentication.getPrincipal()).getId();
-        return ResponseEntity.ok(cartService.getMyCart(userId));
+        User user = ((User) authentication.getPrincipal());
+        return ResponseEntity.ok(cartService.getMyCart(user));
     }
 
     @PatchMapping("/items/{productId}")

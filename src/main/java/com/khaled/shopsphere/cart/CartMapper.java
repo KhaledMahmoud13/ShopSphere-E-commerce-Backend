@@ -3,7 +3,6 @@ package com.khaled.shopsphere.cart;
 import com.khaled.shopsphere.cart.response.CartItemResponse;
 import com.khaled.shopsphere.cart.response.CartResponse;
 import com.khaled.shopsphere.product.Product;
-import com.khaled.shopsphere.product.ProductImage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

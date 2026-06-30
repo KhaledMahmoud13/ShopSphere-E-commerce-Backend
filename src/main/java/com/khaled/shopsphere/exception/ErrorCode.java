@@ -45,6 +45,7 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND("PAYMENT_NOT_FOUND", "Payment not found", NOT_FOUND),
     PAYMENT_ALREADY_EXISTS("PAYMENT_ALREADY_EXISTS", "Payment already exists", CONFLICT),
     ADDRESS_NOT_FOUND("ADDRESS_NOT_FOUND", "Address not found", NOT_FOUND),
+    DEFAULT_ADDRESS_NOT_FOUND("DEFAULT_ADDRESS_NOT_FOUND", "Default address not found", NOT_FOUND),
     INVALID_VERIFICATION_CODE("INVALID_VERIFICATION_CODE", "Invalid verification code", BAD_REQUEST),
     ACCOUNT_ALREADY_EMAIL_VERIFIED("ACCOUNT_ALREADY_EMAIL_VERIFIED", "Email is already verified", BAD_REQUEST),
     STRIPE_SESSION_CREATION_FAILED("STRIPE_SESSION_CREATION_FAILED", "Failed to create Stripe session", INTERNAL_SERVER_ERROR),
@@ -52,6 +53,9 @@ public enum ErrorCode {
     INVALID_STRIPE_SIGNATURE("INVALID_STRIPE_SIGNATURE", "Invalid Stripe signature", BAD_REQUEST),
     STRIPE_EVENT_DESERIALIZATION_FAILED("STRIPE_EVENT_DESERIALIZATION_FAILED", "Failed to deserialize Stripe event", INTERNAL_SERVER_ERROR),
     CATEGORY_NOT_FOUND("CATEGORY_NOT_FOUND", "Category not found", NOT_FOUND),
+    CATEGORY_ALREADY_EXISTS("CATEGORY_ALREADY_EXISTS", "Category with this name already exists", CONFLICT),
+    CATEGORY_HAS_PRODUCTS("CATEGORY_HAS_PRODUCTS", "Category cannot be deleted because it contains products", BAD_REQUEST),
+    CART_ITEM_NOT_FOUND("CART_ITEM_NOT_FOUND", "Cart item not found", NOT_FOUND),
     ;
 
     private final String code;

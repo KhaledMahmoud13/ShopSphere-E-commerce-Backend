@@ -5,7 +5,10 @@ import com.khaled.shopsphere.exception.BusinessException;
 import com.khaled.shopsphere.order.Order;
 import com.khaled.shopsphere.order.OrderRepository;
 import com.khaled.shopsphere.order.OrderStatus;
-import com.khaled.shopsphere.payment.*;
+import com.khaled.shopsphere.payment.Payment;
+import com.khaled.shopsphere.payment.PaymentRepository;
+import com.khaled.shopsphere.payment.PaymentService;
+import com.khaled.shopsphere.payment.PaymentStatus;
 import com.khaled.shopsphere.payment.response.PaymentSessionResult;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -88,14 +91,15 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public void markSucceeded(String paymentIntentId) {
-        Payment payment = paymentRepository.findByStripePaymentIntentId(paymentIntentId)
+    public void handleCheckoutCompleted(String sessionId, String paymentIntentId) {
+        Payment payment = paymentRepository.findByStripeSessionId(sessionId)
                 .orElseThrow(() -> new BusinessException(PAYMENT_NOT_FOUND));
 
         if (payment.getStatus() == PaymentStatus.SUCCEEDED) {
             return;
         }
 
+        payment.setStripePaymentIntentId(paymentIntentId);
         payment.setStatus(PaymentStatus.SUCCEEDED);
         payment.setPaidAt(Instant.now());
         payment.getOrder().setStatus(OrderStatus.PAID);
@@ -116,14 +120,6 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setStatus(PaymentStatus.FAILED);
 
         log.info("Payment {} marked FAILED for order {}", payment.getId(), payment.getOrder().getId());
-    }
-
-    @Override
-    @Transactional
-    public void attachPaymentIntent(String stripeSessionId, String paymentIntentId) {
-        Payment payment = paymentRepository.findByStripeSessionId(stripeSessionId)
-                .orElseThrow(() -> new BusinessException(PAYMENT_NOT_FOUND));
-        payment.setStripePaymentIntentId(paymentIntentId);
     }
 
     @Override

@@ -11,7 +11,6 @@ import com.stripe.net.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import static com.khaled.shopsphere.exception.ErrorCode.INVALID_STRIPE_SIGNATURE;
 import static com.khaled.shopsphere.exception.ErrorCode.STRIPE_EVENT_DESERIALIZATION_FAILED;
@@ -23,7 +22,6 @@ public class StripeWebhookService {
     private final StripeProperties stripeProperties;
     private final PaymentService paymentService;
 
-    @Transactional
     public void processWebhook(
             String payload,
             String signature
@@ -58,8 +56,7 @@ public class StripeWebhookService {
     private void handleCheckoutCompleted(Event event) {
         Session session = extractSession(event);
 
-        paymentService.attachPaymentIntent(session.getId(), session.getPaymentIntent());
-        paymentService.markSucceeded(session.getPaymentIntent());
+        paymentService.handleCheckoutCompleted(session.getId(), session.getPaymentIntent());
     }
 
     private void handlePaymentFailed(Event event) {

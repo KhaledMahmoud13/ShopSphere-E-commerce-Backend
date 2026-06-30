@@ -53,5 +53,5 @@ public class Address extends BaseEntity {
     private String postalCode;
 
     @Column(name = "IS_DEFAULT", nullable = false)
-    private boolean isDefault;
+    private Boolean isDefault;
 }

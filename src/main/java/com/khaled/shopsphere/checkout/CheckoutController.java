@@ -29,7 +29,7 @@ public class CheckoutController {
             @Valid @RequestBody CheckoutRequest request,
             Authentication authentication
     ) {
-        UUID userId = ((User) authentication.getPrincipal()).getId();
-        return ResponseEntity.ok(checkoutService.checkout(userId, request));
+        User user = ((User) authentication.getPrincipal());
+        return ResponseEntity.ok(checkoutService.checkout(user, request));
     }
 }

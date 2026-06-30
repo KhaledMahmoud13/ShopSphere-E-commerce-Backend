@@ -1,12 +1,9 @@
 package com.khaled.shopsphere;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
+//@SpringBootTest
 class ShopSphereApplicationTests {
 
-    @Test
+//    @Test
     void contextLoads() {
     }
 

@@ -28,9 +28,9 @@ public class AddressController {
             @Valid @RequestBody CreateAddressRequest request,
             Authentication authentication
     ) {
-        UUID userId = ((User) authentication.getPrincipal()).getId();
+        User user = ((User) authentication.getPrincipal());
 
-        return ResponseEntity.ok(addressService.create(userId, request));
+        return ResponseEntity.ok(addressService.create(user, request));
     }
 
     @GetMapping

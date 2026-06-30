@@ -35,7 +35,7 @@ public class ShopSphereApplication {
     ) {
         return _ -> {
 
-            if (userRepository.findByEmailIgnoreCase(adminEmail).isPresent()) {
+            if (userRepository.existsByEmailIgnoreCase(adminEmail)) {
                 return;
             }
 

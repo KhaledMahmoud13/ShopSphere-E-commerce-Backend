@@ -8,11 +8,9 @@ import java.util.UUID;
 public interface PaymentService {
     PaymentSessionResult createStripeSession(Order order);
 
-    void markSucceeded(String paymentIntentId);
+    void handleCheckoutCompleted(String sessionId, String paymentIntentId);
 
     void markFailed(String paymentIntentId);
-
-    void attachPaymentIntent(String stripeSessionId, String paymentIntentId);
 
     PaymentSessionResult getOrCreateSession(UUID orderId);
 }

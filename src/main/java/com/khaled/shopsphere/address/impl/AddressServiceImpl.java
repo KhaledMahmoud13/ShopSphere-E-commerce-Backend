@@ -8,7 +8,6 @@ import com.khaled.shopsphere.address.request.CreateAddressRequest;
 import com.khaled.shopsphere.address.request.UpdateAddressRequest;
 import com.khaled.shopsphere.address.response.AddressResponse;
 import com.khaled.shopsphere.exception.BusinessException;
-import com.khaled.shopsphere.exception.ErrorCode;
 import com.khaled.shopsphere.user.User;
 import com.khaled.shopsphere.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.khaled.shopsphere.exception.ErrorCode.ADDRESS_NOT_FOUND;
-import static com.khaled.shopsphere.exception.ErrorCode.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -33,12 +31,10 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    public AddressResponse create(UUID userId, CreateAddressRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+    public AddressResponse create(User user, CreateAddressRequest request) {
 
         if (request.isDefault()) {
-            clearDefaultAddresses(userId);
+            clearDefaultAddresses(user.getId());
         }
 
         Address address = Address.builder()
@@ -89,21 +85,23 @@ public class AddressServiceImpl implements AddressService {
                         new BusinessException(ADDRESS_NOT_FOUND)
                 );
 
-        if (request.isDefault()) {
-            clearDefaultAddresses(userId);
+        if (request.getIsDefault() != null) {
+            if (request.getIsDefault()) {
+                clearDefaultAddresses(userId);
+            }
+            address.setIsDefault(request.getIsDefault());
         }
 
-        address.setRecipientName(request.getRecipientName());
-        address.setRecipientPhone(request.getRecipientPhone());
-        address.setCountry(request.getCountry());
-        address.setCity(request.getCity());
-        address.setArea(request.getArea());
-        address.setStreet(request.getStreet());
-        address.setBuildingNumber(request.getBuildingNumber());
-        address.setFloorNumber(request.getFloorNumber());
-        address.setApartmentNumber(request.getApartmentNumber());
-        address.setPostalCode(request.getPostalCode());
-        address.setDefault(request.isDefault());
+        address.setRecipientName(valueOrCurrent(normalize(request.getRecipientName()), address.getRecipientName()));
+        address.setRecipientPhone(valueOrCurrent(normalize(request.getRecipientPhone()), address.getRecipientPhone()));
+        address.setCountry(valueOrCurrent(normalize(request.getCountry()), address.getCountry()));
+        address.setCity(valueOrCurrent(normalize(request.getCity()), address.getCity()));
+        address.setArea(valueOrCurrent(normalize(request.getArea()), address.getArea()));
+        address.setStreet(valueOrCurrent(normalize(request.getStreet()), address.getStreet()));
+        address.setBuildingNumber(valueOrCurrent(normalize(request.getBuildingNumber()), address.getBuildingNumber()));
+        address.setFloorNumber(valueOrCurrent(normalize(request.getFloorNumber()), address.getFloorNumber()));
+        address.setApartmentNumber(valueOrCurrent(normalize(request.getApartmentNumber()), address.getApartmentNumber()));
+        address.setPostalCode(valueOrCurrent(normalize(request.getPostalCode()), address.getPostalCode()));
 
         return addressMapper.toResponse(address);
     }
@@ -131,14 +129,18 @@ public class AddressServiceImpl implements AddressService {
 
         clearDefaultAddresses(userId);
 
-        address.setDefault(true);
+        address.setIsDefault(true);
     }
 
     private void clearDefaultAddresses(UUID userId) {
+        addressRepository.clearDefaultAddress(userId);
+    }
 
-        addressRepository.findByUserId(userId)
-                .forEach(address ->
-                        address.setDefault(false)
-                );
+    private <T> T valueOrCurrent(T newValue, T currentValue) {
+        return newValue != null ? newValue : currentValue;
+    }
+
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value;
     }
 }

@@ -13,7 +13,7 @@ public class AsyncConfig {
     @Bean(name = "imageUploadExecutor")
     public Executor imageUploadExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);   // handle up to 5 concurrent uploads comfortably
+        executor.setCorePoolSize(5);
         executor.setMaxPoolSize(10);
         executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("img-upload-");

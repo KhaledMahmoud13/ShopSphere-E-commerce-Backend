@@ -8,7 +8,6 @@ import com.khaled.shopsphere.exception.BusinessException;
 import com.khaled.shopsphere.product.Product;
 import com.khaled.shopsphere.product.ProductRepository;
 import com.khaled.shopsphere.user.User;
-import com.khaled.shopsphere.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,20 +23,17 @@ import static com.khaled.shopsphere.exception.ErrorCode.*;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-    private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CartItemRepository cartItemRepository;
     private final CartMapper cartMapper;
 
     @Override
     @Transactional
-    public void addItem(AddCartItemRequest request, UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-
+    public void addItem(AddCartItemRequest request, User user) {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new BusinessException(PRODUCT_NOT_FOUND));
 
-        Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> {
+        Cart cart = cartRepository.findByUserId(user.getId()).orElseGet(() -> {
             Cart newCart = Cart.builder()
                     .user(user)
                     .build();
@@ -70,11 +66,8 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional(readOnly = true)
-    public CartResponse getMyCart(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-
-        Cart cart = cartRepository.findByUserId(userId)
+    public CartResponse getMyCart(User user) {
+        Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseGet(() ->
                         Cart.builder()
                                 .user(user)
@@ -95,39 +88,34 @@ public class CartServiceImpl implements CartService {
                         .getId()
                         .equals(productId)
                 ).findFirst()
-                .orElseThrow(() -> new BusinessException(PRODUCT_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(CART_ITEM_NOT_FOUND));
 
         item.setQuantity(request.getQuantity());
-
-        cartRepository.save(cart);
     }
 
     @Override
+    @Transactional
     public void removeItem(UUID productId, UUID userId) {
         Cart cart = getCart(userId);
 
-        cart.getItems().removeIf(item ->
+        boolean removed = cart.getItems().removeIf(item ->
                 item.getProduct()
                         .getId()
                         .equals(productId)
         );
 
-        cartRepository.save(cart);
+        if (!removed) throw new BusinessException(CART_ITEM_NOT_FOUND);
     }
 
     @Override
+    @Transactional
     public void clear(UUID userId) {
         Cart cart = getCart(userId);
-        cart.getItems().clear();
-        cartRepository.save(cart);
+        cartItemRepository.deleteAllByCartId(cart.getId());
     }
 
     private Cart getCart(UUID userId) {
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-
         return cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(CART_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(CART_NOT_FOUND, userId));
     }
 }

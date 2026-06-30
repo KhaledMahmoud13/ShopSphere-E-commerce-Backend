@@ -10,9 +10,7 @@ import com.khaled.shopsphere.order.request.OrderFilterRequest;
 import com.khaled.shopsphere.order.request.OrderItemRequest;
 import com.khaled.shopsphere.order.response.OrderResponse;
 import com.khaled.shopsphere.product.Product;
-import com.khaled.shopsphere.product.ProductRepository;
 import com.khaled.shopsphere.user.User;
-import com.khaled.shopsphere.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static com.khaled.shopsphere.exception.ErrorCode.*;
 
@@ -34,8 +34,6 @@ import static com.khaled.shopsphere.exception.ErrorCode.*;
 @Slf4j
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository;
     private final InventoryService inventoryService;
     private final ApplicationEventPublisher eventPublisher;
     private final OrderMapper mapper;
@@ -46,13 +44,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Order createFromCart(List<OrderItemRequest> orderItems, UUID userId) {
+    public Order createFromCart(List<OrderItemRequest> orderItems, User user) {
         if (orderItems == null || orderItems.isEmpty()) {
             throw new BusinessException(ORDER_HAS_NO_ITEMS);
         }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
 
         List<InventoryItem> inventoryItems = orderItems.stream()
                 .map(item -> new InventoryItem(
@@ -61,17 +56,7 @@ public class OrderServiceImpl implements OrderService {
                 ))
                 .toList();
 
-        inventoryService.validateAndDeduct(inventoryItems);
-
-        Set<UUID> productIds = orderItems.stream()
-                .map(OrderItemRequest::getProductId)
-                .collect(Collectors.toSet());
-
-        Map<UUID, Product> productMap = productRepository.findAllById(productIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        Product::getId, p -> p
-                ));
+        Map<UUID, Product> productMap = inventoryService.validateAndDeduct(inventoryItems);
 
         Order order = Order.builder()
                 .user(user)
@@ -79,7 +64,6 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         List<OrderItem> items = new ArrayList<>();
-
         BigDecimal total = BigDecimal.ZERO;
 
         for (OrderItemRequest itemRequest : orderItems) {
@@ -94,11 +78,7 @@ public class OrderServiceImpl implements OrderService {
             }
 
             BigDecimal itemTotal = product.getPrice()
-                    .multiply(
-                            BigDecimal.valueOf(
-                                    itemRequest.getQuantity()
-                            )
-                    );
+                    .multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
 
             total = total.add(itemTotal);
 
@@ -118,20 +98,16 @@ public class OrderServiceImpl implements OrderService {
 
         Order saved = orderRepository.save(order);
 
-        eventPublisher.publishEvent(new OrderCreatedEvent(saved.getId(), userId));
+        eventPublisher.publishEvent(new OrderCreatedEvent(saved.getId(), user.getId()));
 
         return saved;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getUserOrders(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-        return orderRepository.findByUserId(userId)
-                .stream()
-                .map(mapper::toOrderResponse)
-                .toList();
+    public PageResponse<OrderResponse> getUserOrders(UUID userId, Pageable pageable) {
+        Page<Order> page = orderRepository.findByUserId(userId, pageable);
+        return getOrderResponsePageResponse(page);
     }
 
     @Override
@@ -203,8 +179,11 @@ public class OrderServiceImpl implements OrderService {
             page = orderRepository.findAll(finalPageable);
         }
 
-        Page<OrderResponse> responsePage = page.map(mapper::toOrderResponse);
+        return getOrderResponsePageResponse(page);
+    }
 
+    private PageResponse<OrderResponse> getOrderResponsePageResponse(Page<Order> page) {
+        Page<OrderResponse> responsePage = page.map(mapper::toOrderResponse);
         return PageResponse.<OrderResponse>builder()
                 .data(responsePage.getContent())
                 .page(responsePage.getNumber() + 1)
