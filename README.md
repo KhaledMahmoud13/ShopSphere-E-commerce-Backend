@@ -30,7 +30,6 @@
 - [Testing](#testing)
 - [Common Scripts & Commands](#common-scripts--commands)
 - [TODOs & Roadmap](#todos--roadmap)
-- [License](#license)
 
 ---
 
